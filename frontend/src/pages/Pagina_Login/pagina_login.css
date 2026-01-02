@@ -1,0 +1,80 @@
+/* --- Estilos base (Manteniendo los tuyos) --- */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.user-icon {
+  width: 80px; height: 80px; border-radius: 50%; border: 2px solid #0000FF;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;
+}
+.user-icon svg { width: 48px; height: 48px; stroke: #0000FF; }
+
+.auth-form {
+  display: flex; flex-direction: column; width: 100%; gap: 0.8rem;
+}
+
+.auth-form label {
+  font-size: 0.9rem; font-weight: 600; margin-bottom: 0.1rem; margin-left: 5px;
+}
+
+.auth-form input {
+  width: 100%; padding: 0.8rem 1rem; border: 1px solid transparent; border-radius: 25px;
+  box-sizing: border-box; background-color: #E6E6FA; color: #333; font-weight: 500;
+  outline: none; transition: 0.3s;
+}
+.auth-form input:focus { border: 1px solid #0000FF; background-color: #f0f0ff; }
+
+/* Botones */
+.btn {
+  width: 100%; padding: 0.9rem; border: none; border-radius: 25px; font-weight: bold;
+  cursor: pointer; font-size: 1rem; margin-top: 1rem; transition: 0.2s;
+}
+.btn-primary { background-color: #0000FF; color: white; }
+.btn-primary:hover { background-color: #0000CC; }
+.btn-primary:disabled { background-color: #8888ff; cursor: wait; }
+
+.btn-secondary {
+  background-color: transparent; color: #555; border: 1px solid #ccc; margin-top: 5px;
+}
+.btn-secondary:hover { background-color: #f9f9f9; color: #333; }
+
+/* --- NUEVOS ESTILOS --- */
+
+/* Alertas */
+.error-alert {
+    background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 8px;
+    font-size: 0.85rem; text-align: center; border: 1px solid #ffcdd2;
+}
+.success-msg {
+    background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 8px;
+    font-size: 0.85rem; text-align: center; border: 1px solid #c8e6c9;
+}
+
+/* Enlaces Extra */
+.forgot-password-link { text-align: center; margin-top: 10px; }
+.btn-text {
+    background: none; border: none; color: #0000FF; cursor: pointer;
+    font-size: 0.9rem; text-decoration: underline; padding: 0;
+}
+.btn-text:hover { color: #00008B; }
+
+.register-link-container { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+.register-link { color: #0000FF; font-weight: 600; text-decoration: none; }
+.register-link:hover { text-decoration: underline; }
+
+/* Contenedor Reset (El "Modal" interno) */
+.reset-password-container { text-align: center; width: 100%; animation: fadeIn 0.3s ease; }
+.reset-password-container h3 { margin-bottom: 10px; color: #000099; }
+.reset-password-container p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

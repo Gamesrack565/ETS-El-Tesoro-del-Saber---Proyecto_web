@@ -1,0 +1,298 @@
+/* --- VARIABLES --- */
+:root {
+  --analisis-blue: #00008B;
+  --analisis-white: #ffffff;
+}
+
+/* CONTENEDOR PRINCIPAL: ALTO EXACTO DE PANTALLA */
+.analisis-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Altura forzada al 100% del viewport */
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: var(--analisis-white);
+  font-family: 'Segoe UI', sans-serif;
+  overflow: hidden; /* Evitar scroll general */
+}
+
+/* --- HEADER Y FOOTER (FIJOS) --- */
+.analisis-header {
+  background-color: var(--analisis-blue);
+  color: var(--analisis-white);
+  padding: 15px 0;
+  text-align: center;
+  flex-shrink: 0; /* No encogerse */
+}
+
+.analisis-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.analisis-footer {
+  background-color: var(--analisis-blue);
+  padding: 15px 0;
+  width: 100%;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* --- CONTENIDO PRINCIPAL (FLEXIBLE) --- */
+.analisis-main-content {
+  flex: 1; /* Ocupa todo el espacio sobrante */
+  padding: 20px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch; /* Estirar hijos */
+  overflow: hidden; 
+}
+
+.two-column-layout {
+  display: flex;
+  width: 100%;
+  max-width: 1600px;
+  gap: 40px;
+  height: 100%; /* Importante para que las columnas crezcan */
+}
+
+.analisis-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.column-title {
+  color: var(--analisis-blue);
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 15px;
+  min-height: 40px; /* Altura mínima para alinear títulos de 1 o 2 líneas */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --- CAJAS UNIFICADAS (ESTIRABLES) --- */
+.data-box {
+  flex: 1; /* LA CLAVE: Crecer para llenar la columna */
+  width: 100%;
+  border: 3px solid var(--analisis-blue);
+  border-radius: 20px;
+  background-color: var(--analisis-white);
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll interno si el contenido es mucho */
+}
+
+/* Estilos Upload Box */
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-box.dragging {
+  background-color: rgba(0, 0, 139, 0.05);
+  border-style: dashed;
+  transform: scale(1.01);
+}
+
+.upload-box.has-file {
+  background-color: #f0fff4;
+  border-color: #28a745;
+}
+
+.upload-text {
+  color: var(--analisis-blue);
+  font-weight: bold;
+  font-size: 1.3rem;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Caja de Resultados */
+.results-box {
+  padding: 20px;
+  font-family: monospace;
+  white-space: pre-wrap; /* Respetar saltos de línea del texto */
+}
+
+/* --- BOTONES --- */
+.analisis-button {
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: 0.3s;
+  font-size: 0.9rem;
+  flex-shrink: 0; /* Asegura que el botón no desaparezca */
+}
+
+.primary-button {
+  border: 3px solid var(--analisis-blue);
+  background: white;
+  color: var(--analisis-blue);
+  width: 100%;
+}
+
+.primary-button:hover {
+  background-color: var(--analisis-blue);
+  color: white;
+}
+
+.secondary-button {
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+}
+
+.secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.no-underline { text-decoration: none; }
+
+/* Ajuste móvil */
+@media (max-width: 768px) {
+  .analisis-page-container { height: auto; overflow-y: auto; }
+  .two-column-layout { flex-direction: column; height: auto; }
+  .data-box { min-height: 300px; }
+}
+
+/* --- ESTILOS PARA RESULTADOS Y MENSAJES --- */
+
+/* Mensajes de error/éxito */
+.status-msg {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.status-msg.error {
+    background-color: #ffdddd;
+    color: #d8000c;
+    border: 1px solid #d8000c;
+}
+
+.status-msg.success {
+    background-color: #ddffdd;
+    color: #4f8a10;
+    border: 1px solid #4f8a10;
+}
+
+/* Spinner de carga */
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--analisis-blue);
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: var(--analisis-blue);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Tarjetas de Reseñas */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px;
+}
+
+.review-card-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.review-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.review-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.prof-name {
+    font-weight: 800;
+    color: var(--analisis-blue);
+    font-size: 1.1rem;
+}
+
+.rating-badge {
+    background-color: #ffc107;
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.review-body {
+    color: #555;
+    font-style: italic;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.review-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #888;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+    font-style: italic;
+}
+
+/* --- ADVERTENCIA DE ADMIN --- */
+.admin-warning {
+    color: #ff0000; /* Rojo puro */
+    font-weight: bold;
+    text-align: center;
+    margin-top: -10px; /* Pegarlo un poco al título */
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+} 

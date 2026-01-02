@@ -1,0 +1,234 @@
+/* --- VARIABLES --- */
+:root {
+  --subir-blue: #00008B;
+  --subir-white: #ffffff;
+  --subir-gray: #f4f4f4;
+  --subir-green: #28a745;
+  --subir-red: #dc3545;
+}
+
+/* CONTENEDOR PRINCIPAL: BLOQUEADO AL 100% DE LA PANTALLA */
+.subir-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Altura exacta de la ventana */
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: var(--subir-white);
+  font-family: 'Segoe UI', sans-serif;
+  overflow: hidden; /* PROHIBIDO EL SCROLL */
+}
+
+/* --- HEADER Y FOOTER: COMPACTOS --- */
+.subir-header {
+  background-color: var(--subir-blue);
+  color: var(--subir-white);
+  padding: 15px 0; /* Reducido de 25px */
+  text-align: center;
+  flex-shrink: 0; /* No encogerse */
+}
+
+.subir-header h1 {
+  margin: 0;
+  font-size: 1.4rem; /* Un poco más pequeño */
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.subir-footer {
+  background-color: var(--subir-blue);
+  padding: 10px 0; /* Muy compacto */
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* --- MAIN CONTENT: LLENA EL ESPACIO RESTANTE --- */
+.subir-main-content {
+  flex: 1; /* Toma todo el espacio sobrante entre header y footer */
+  padding: 20px 40px; /* Padding interno balanceado */
+  display: flex;
+  justify-content: center;
+  align-items: stretch; /* Estirar hijos a lo alto */
+  overflow: hidden; 
+}
+
+/* LAYOUT DE DOS COLUMNAS */
+.two-column-layout {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  gap: 30px; /* Menor espacio entre columnas */
+  height: 100%; /* Importante: Usa toda la altura del main */
+}
+
+.subir-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Llenar altura */
+}
+
+.column-title {
+  color: var(--subir-blue);
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px; /* Menor margen */
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* --- CAJAS DE CONTENIDO (Formularios y Upload) --- */
+/* Estas cajas ahora controlan el espacio vertical interno */
+
+.form-box, .action-box-container {
+  flex: 1; /* Ocupar todo el alto disponible en la columna */
+  background-color: var(--subir-white);
+  padding: 20px 30px;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* DISTRIBUIR ELEMENTOS EQUITATIVAMENTE */
+  overflow-y: auto; /* Scroll interno solo si la pantalla es enana */
+}
+
+/* Quitamos borde al contenedor derecho porque los hijos tienen borde */
+.action-box-container {
+    border: none;
+    padding: 0;
+    background: transparent;
+    gap: 15px; 
+}
+
+/* --- INPUTS Y LABELS --- */
+label {
+  color: var(--subir-blue);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: block;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background-color: #ffffff; /* Fondo blanco */
+  
+  /* --- AGREGA ESTAS LÍNEAS PARA EL COLOR DE TEXTO --- */
+  color: #333333 !important; /* Texto gris oscuro/negro forzado */
+  font-weight: 500; /* Un poco más de grosor para que se lea mejor */
+}
+
+/* Aseguramos que al escribir (focus) también se vea */
+.input-field:focus {
+  border-color: var(--subir-blue);
+  background-color: #ffffff;
+  color: #000000 !important; /* Negro absoluto al escribir */
+  outline: none;
+}
+
+.textarea-field {
+  resize: none; /* No permitir cambiar tamaño manual */
+  height: 80px; /* Altura fija controlada */
+}
+
+/* --- SELECT PERSONALIZADO --- */
+.select-field {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #333333 !important;
+  background-color: #fff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300008B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px top 50%;
+  background-size: 10px auto;
+}
+
+/* --- DERECHA: CAJA DRAG & DROP --- */
+.data-box {
+  flex: 1; /* Ocupar el espacio restante */
+  border: 3px solid var(--subir-blue);
+  border-radius: 15px;
+  background-color: var(--subir-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 0; /* Permite a flexbox encogerlo si es necesario */
+}
+
+/* Ajustes para cuando es URL (Input simple) */
+.url-box {
+    flex: 0 0 auto; /* No crecer, altura fija */
+    padding: 30px;
+    height: auto;
+}
+
+.upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.upload-text { font-size: 1rem; padding: 0 10px; }
+
+/* --- BOTONES --- */
+.subir-button {
+  padding: 12px;
+  border-radius: 25px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.primary-button {
+  border: 3px solid var(--subir-blue);
+  background: var(--subir-blue);
+  color: white;
+  width: 100%;
+  margin-top: 15px;
+  flex-shrink: 0; /* No aplastarse */
+}
+
+.secondary-button {
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  padding: 8px 20px; /* Más pequeño para el footer */
+}
+
+/* MENSAJES */
+.status-message {
+    padding: 10px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* --- RESPONSIVE: SI LA PANTALLA ES MUY CHICA O MÓVIL --- */
+@media (max-height: 700px), (max-width: 768px) {
+    .subir-page-container {
+        height: auto; /* Volver a auto para permitir scroll en pantallas enanas */
+        overflow-y: auto;
+    }
+    .two-column-layout {
+        flex-direction: column;
+        height: auto;
+    }
+    .subir-main-content {
+        padding: 20px;
+    }
+    .form-box, .action-box-container {
+        gap: 15px; /* Espaciado fijo en móvil */
+    }
+}

@@ -1,0 +1,336 @@
+/* =========================================
+   PAGINA_ASISTENTE.CSS
+   ========================================= */
+
+/* 1. Variables Globales y Reset */
+:root {
+  --asist-dark-blue: #00008B;    
+  --asist-vibrant-blue: #0015ff; 
+  --asist-white: #ffffff;        
+  --asist-bg-light: #f8f9fa;     
+  --asist-gray-text: #555555;    
+}
+
+/* 2. Estructura de Pantalla Completa */
+.asistente-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: var(--asist-bg-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* 3. Encabezado */
+.asistente-header {
+  background-color: var(--asist-dark-blue);
+  color: var(--asist-white);
+  padding: 15px 0;
+  text-align: center;
+  flex-shrink: 0;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.asistente-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Header User Area */
+.header-user-area {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.btn-login-header {
+    background-color: #00c853;
+    color: white;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-login-header:hover {
+    transform: scale(1.05);
+    background-color: #009624;
+}
+
+.user-logged-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-greeting {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.btn-logout-mini {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
+
+.btn-logout-mini:hover {
+    background: rgba(255, 0, 0, 0.4);
+    border-color: red;
+}
+
+@media (max-width: 768px) {
+    .header-user-area {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        margin-top: 10px;
+    }
+    .asistente-header {
+        flex-direction: column;
+        padding: 15px;
+    }
+}
+
+/* 4. Contenedor del Chat */
+.asistente-main-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.conversation-wrapper {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; 
+}
+
+.section-label {
+    color: var(--asist-dark-blue);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    margin-left: 5px;
+}
+
+/* --- CAJA DE RESPUESTA (CON SCROLL/SLIDER) --- */
+.answer-bar {
+  width: 100%;
+  background-color: var(--asist-white);
+  border: 3px solid var(--asist-dark-blue);
+  border-radius: 15px;
+  padding: 25px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  color: var(--asist-dark-blue);
+  
+  /* --- AQUÍ ESTÁ LA MAGIA DEL SLIDER --- */
+  min-height: 300px; 
+  max-height: 50vh;  /* Si el texto pasa el 50% de la pantalla, sale el slider */
+  overflow-y: auto;  /* Esto activa la barra de desplazamiento vertical */
+  
+  display: flex;
+  align-items: flex-start;
+  font-size: 1.1rem;       
+  line-height: 1.6;        
+}
+
+/* Estilo personalizado del slider (scrollbar) */
+.answer-bar::-webkit-scrollbar {
+    width: 10px; /* Ancho del slider */
+}
+.answer-bar::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 5px;
+}
+.answer-bar::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* Color de la barrita */
+    border-radius: 5px;
+    border: 2px solid #f1f1f1;
+}
+.answer-bar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--asist-dark-blue); /* Color al pasar el mouse */
+}
+
+/* Estilos para el texto de la respuesta */
+.bot-response-text {
+    width: 100%;
+    white-space: pre-wrap; /* Respeta los saltos de línea que manda la IA */
+    word-wrap: break-word; /* Evita que el texto se salga horizontalmente */
+    margin: 0;
+}
+
+.placeholder-text {
+    color: #888;
+    font-style: italic;
+}
+
+.typing-indicator {
+    color: #666;
+    font-style: italic;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* --- MENSAJE DE ADVERTENCIA --- */
+.auth-warning-message {
+    color: #d32f2f;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    background-color: #ffebee;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ffcdd2;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+/* --- CAJA DE PREGUNTA --- */
+.question-box-container {
+    width: 100%;
+    background-color: var(--asist-white);
+    border: 3px solid var(--asist-dark-blue);
+    border-radius: 15px;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.question-box-container.disabled-box {
+    background-color: #eeeeee;
+    border-color: #cccccc;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.question-box-container:focus-within {
+     border-color: var(--asist-vibrant-blue);
+     box-shadow: 0 4px 15px rgba(0, 21, 255, 0.15);
+}
+
+.question-textarea-borderless {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    color: var(--asist-dark-blue);
+    font-size: 1rem;
+    font-family: inherit;
+    margin-bottom: 10px;
+}
+
+.question-textarea-borderless::placeholder {
+    color: #a3aed0;
+    font-style: italic;
+}
+
+.question-box-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.send-button-integrated {
+    background-color: var(--asist-dark-blue);
+    color: white;
+    border: none;
+    padding: 8px 25px; 
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.send-button-integrated:hover {
+    background-color: var(--asist-vibrant-blue);
+    transform: translateY(-1px);
+}
+
+.send-button-integrated:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 7. Barra de Navegación Inferior */
+.bottom-navigation-bar {
+    background-color: var(--asist-vibrant-blue);
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.nav-pill-button {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.85rem;
+}
+
+.nav-pill-button:hover, .nav-pill-button.active {
+    background: white;
+    color: var(--asist-vibrant-blue);
+    border-color: white;
+}
+
+.nav-link { text-decoration: none; }
+
+@media (max-width: 768px) {
+    .asistente-page-container { height: auto; overflow-y: auto; }
+    .bottom-navigation-bar { flex-direction: column; align-items: center; border-radius: 0; }
+    .nav-pill-button { width: 100%; text-align: center; }
+}

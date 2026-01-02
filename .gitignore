@@ -1,0 +1,20 @@
+# Ignorar archivos de configuración personal (Variables de entorno)
+.env
+**/.env
+
+# Ignorar TODAS las carpetas __pycache__ en cualquier subcarpeta
+**/__pycache__/
+*.pyc
+
+# Ignorar el entorno virtual (Asegúrate de cómo se llama tu carpeta, si venv o env)
+venv/
+env/
+ENV/
+bin/
+include/
+lib/
+share/
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db

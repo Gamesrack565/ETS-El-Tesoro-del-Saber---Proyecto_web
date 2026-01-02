@@ -1,0 +1,125 @@
+:root {
+  --primary: #240090; 
+  --bg-color: #f8f9fa;
+  --border-color: #ddd;
+  --header-h: 70px;
+  --footer-h: 60px;
+}
+
+.page-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- HEADER --- */
+.fixed-header {
+  height: var(--header-h); background: white; padding: 0 30px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03); z-index: 10;
+}
+
+.header-left, .header-right { flex: 1; display: flex; }
+.header-right { justify-content: flex-end; }
+
+.page-title { font-size: 1.6rem; font-weight: 800; color: var(--primary); margin: 0; text-transform: uppercase; text-align: center; }
+
+.btn-back-outline {
+    display: flex; align-items: center; gap: 5px; background: transparent; border: 1px solid #ccc;
+    padding: 6px 15px; border-radius: 20px; color: #555; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.btn-back-outline:hover { border-color: var(--primary); color: var(--primary); background: #f0f4ff; }
+
+.user-widget-mini {
+    display: flex; align-items: center; gap: 10px; background: #f1f3f5;
+    padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #ddd;
+}
+.user-widget-mini strong { color: var(--primary); }
+.logout-mini { background: #ffebee; color: #d32f2f; border: none; padding: 5px; border-radius: 50%; cursor: pointer; display: flex; transition: 0.2s; }
+.logout-mini:hover { background: #ffcdd2; }
+.login-btn-mini { text-decoration: none; background: #00c853; color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+
+/* --- MAIN CONTENT --- */
+.calendar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 40px; /* Padding reducido */
+    gap: 10px;
+    overflow: hidden;
+    align-items: center; 
+}
+
+/* Barra Superior (Solo botón) */
+.top-actions-bar {
+    width: 100%; max-width: 1000px;
+    display: flex; justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.btn-action-filled {
+    text-decoration: none; display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px; background: var(--primary); border-radius: 6px;
+    color: white; font-weight: 600; transition: 0.2s; font-size: 0.85rem; border: none;
+}
+.btn-action-filled:hover { background: #1a0075; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(36, 0, 144, 0.2); }
+
+/* --- PDF VIEWER --- */
+.pdf-viewer-container {
+    flex: 1; /* Ocupa el espacio restante */
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #ccc;
+    width: 100%; max-width: 1000px; /* Formato documento */
+}
+
+.pdf-frame { width: 100%; height: 100%; border: none; }
+
+/* --- INFO ABAJO (Pequeño) --- */
+.calendar-footer-info {
+    display: flex; align-items: center; gap: 10px;
+    color: #666; flex-shrink: 0; padding-bottom: 5px;
+    background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 20px;
+}
+.icon-blue-small { color: var(--primary); }
+.info-text h3 { margin: 0; font-size: 0.9rem; font-weight: 700; color: #444; }
+.info-text span { font-size: 0.8rem; color: #888; }
+
+/* Spinner */
+.loading-spinner {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    background: #fff; z-index: 5;
+}
+.spinner {
+    width: 40px; height: 40px; border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 15px;
+}
+.loading-spinner p { color: var(--primary); font-weight: 600; font-size: 0.9rem; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- FOOTER --- */
+.footer-bar {
+    height: 60px; background: #1a0075; display: flex; align-items: center; 
+    justify-content: flex-end; padding: 0 40px; flex-shrink: 0;
+}
+.btn-volver {
+    background: white; color: #1a0075; border: none; padding: 8px 25px;
+    border-radius: 20px; font-weight: 700; cursor: pointer; transition: 0.2s;
+}
+.btn-volver:hover { transform: scale(1.05); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .calendar-content { padding: 10px; }
+    .top-actions-bar { justify-content: center; margin-bottom: 5px; }
+}
