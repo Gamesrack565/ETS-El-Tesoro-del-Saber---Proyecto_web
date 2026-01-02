@@ -296,17 +296,18 @@ const MallaCurricular = () => {
           </div>
         )}
 
+
         {activeTab === '3-4' && (
           <div className="curriculum-grid">
             <div className="semester-column">
-              <h2 className="semester-number">3</h2>
-              {currentMaterias.sem3?.map((m, i) => 
+              <h2>3</h2>
+              {currentMaterias.sem3?.map((m, i) =>
                 <div key={i} className={`subject-pill${getHighlightClass(m)}`} onClick={() => handleMateriaClick(m)}>{m}</div>
               )}
             </div>
             <div className="semester-column">
-              <h2 className="semester-number">4</h2>
-              {currentMaterias.sem2?.map((m, i) => 
+              <h2>4</h2>
+              {currentMaterias.sem4?.map((m, i) =>
                 <div key={i} className={`subject-pill${getHighlightClass(m)}`} onClick={() => handleMateriaClick(m)}>{m}</div>
               )}
             </div>
