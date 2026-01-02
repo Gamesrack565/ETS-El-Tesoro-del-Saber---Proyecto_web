@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import api from '../../api/axiosConfig'; // Importamos tu configuración de Axios
+import api from '../../api/axiosConfig'; 
 import './pagina_subir.css';
 
 const Pagina_Subir = () => {
@@ -16,18 +16,33 @@ const Pagina_Subir = () => {
   const [urlExterna, setUrlExterna] = useState('');
   const [archivo, setArchivo] = useState(null);
 
-  // Estados visuales
+  // --- NUEVO ESTADO PARA SUGERENCIAS ---
+  const [materiasSugeridas, setMateriasSugeridas] = useState([]);
+
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); 
 
-  // AL CARGAR: Verificamos sesión y pre-llenamos materia
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
         alert("Debes iniciar sesión para subir recursos.");
         navigate('/login');
     }
+
+    // 1. Cargar la lista de materias existentes para el autocompletado
+    const cargarMaterias = async () => {
+        try {
+            // Ajusta esta ruta según tu endpoint de catálogo de materias
+            const response = await api.get('/catalogos/materias');
+            // Asumiendo que response.data es una lista de objetos con .nombre o una lista de strings
+            setMateriasSugeridas(response.data);
+        } catch (error) {
+            console.error("Error al cargar catálogo de materias:", error);
+        }
+    };
+    
+    cargarMaterias();
 
     if (location.state && location.state.materia) {
       setMateria(location.state.materia);
@@ -51,9 +66,7 @@ const Pagina_Subir = () => {
   };
   const openFileSelector = () => fileInputRef.current.click();
 
-  // --- ENVÍO DEL FORMULARIO CON AXIOS ---
   const handleSubmit = async () => {
-    // 1. Validaciones
     if (!title || !materia || !type) {
       setMessage({ type: 'error', text: 'Por favor completa Título, Materia y Tipo.' });
       return;
@@ -72,7 +85,6 @@ const Pagina_Subir = () => {
     setLoading(true);
     setMessage(null);
 
-    // 2. Construir FormData
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description); 
@@ -85,43 +97,29 @@ const Pagina_Subir = () => {
       formData.append('url_externa', urlExterna);
     }
 
-    // 3. Petición con la instancia 'api'
     try {
-      // Usamos la ruta relativa al baseURL de tu axiosConfig
-      const response = await api.post('/portal/', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-            // El token se envía automáticamente gracias al Interceptor en axiosConfig
-        }
+      await api.post('/portal/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Éxito con Axios
       setMessage({ type: 'success', text: '¡Recurso subido exitosamente!' });
-      
-      // Limpiamos
       setTitle('');
       setDescription('');
       setArchivo(null);
       setUrlExterna('');
-      
       setTimeout(() => navigate('/portal'), 1500);
 
     } catch (error) {
-      console.error("Error al subir:", error);
-      
       if (error.response) {
-        // El servidor respondió con error (4xx o 5xx)
         const status = error.response.status;
         const detail = error.response.data?.detail;
-
         if (status === 401) {
-            setMessage({ type: 'error', text: 'Tu sesión ha expirado. Redirigiendo...' });
+            setMessage({ type: 'error', text: 'Tu sesión ha expirado.' });
             setTimeout(() => navigate('/login'), 2000);
         } else {
             setMessage({ type: 'error', text: `Error: ${detail || 'No se pudo subir.'}` });
         }
       } else {
-        // Error de conexión (Koyeb caído o sin internet)
         setMessage({ type: 'error', text: 'Error de conexión con el servidor.' });
       }
     } finally {
@@ -137,20 +135,27 @@ const Pagina_Subir = () => {
 
       <main className="subir-main-content">
         <div className="two-column-layout">
-          
           <section className="subir-column">
             <h2 className="column-title">Detalles del Recurso</h2>
             
             <div className="form-box">
               <div>
                   <label>Materia *</label>
+                  {/* --- AGREGADO: list="lista-materias" --- */}
                   <input 
                     type="text" 
                     className="input-field" 
                     placeholder="Ej. Bases de Datos"
+                    list="lista-materias"
                     value={materia}
                     onChange={(e) => setMateria(e.target.value)}
                   />
+                  {/* --- NUEVO: Componente datalist para las sugerencias --- */}
+                  <datalist id="lista-materias">
+                    {materiasSugeridas.map((item, index) => (
+                        <option key={index} value={item.nombre || item} />
+                    ))}
+                  </datalist>
               </div>
 
               <div>
