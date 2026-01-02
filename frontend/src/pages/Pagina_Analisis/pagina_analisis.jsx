@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api/axiosConfig'; // Importamos tu instancia de axios personalizada
 import './pagina_analisis.css';
 
 const Pagina_Analisis = () => {
@@ -14,9 +15,6 @@ const Pagina_Analisis = () => {
 
   const inputRef = useRef(null);
   const navigate = useNavigate();
-
-  // URL de tu API 
-  const API_URL = "http://127.0.0.1:8000/api/ia/process_reviews";
 
   // Verificar sesión al entrar
   useEffect(() => {
@@ -46,7 +44,7 @@ const Pagina_Analisis = () => {
 
   const alArrastrarSobre = (e) => {
     e.preventDefault();
-    setEstaArrastrando(true);
+    estaArrastrando || setEstaArrastrando(true);
   };
 
   const alSalirDeArrastrar = () => setEstaArrastrando(false);
@@ -59,16 +57,10 @@ const Pagina_Analisis = () => {
     }
   };
 
-  // --- LÓGICA DE CONEXIÓN CON LA API ---
+  // --- LÓGICA DE CONEXIÓN CON LA API UTILIZANDO AXIOS ---
   const handleAnalizar = async () => {
     if (!archivo) {
         alert("Por favor selecciona un archivo primero.");
-        return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-        navigate('/login');
         return;
     }
 
@@ -80,30 +72,36 @@ const Pagina_Analisis = () => {
     formData.append('file', archivo);
 
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
+        // Usamos la instancia 'api'. El interceptor agregará automáticamente el Token.
+        // La ruta es relativa a la baseURL (que ya termina en /api)
+        const response = await api.post('/ia/process_reviews', formData, {
             headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
+                'Content-Type': 'multipart/form-data'
+            }
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            setSuccessMsg(data.message); 
-            setReviews(data.data); 
-        } else {
-            setError(data.detail || "Error al procesar el archivo.");
-            if (response.status === 401 || response.status === 403) {
-                alert("Sesión expirada o permisos insuficientes.");
-                navigate('/login');
-            }
-        }
+        // Con Axios, los datos están en response.data
+        setSuccessMsg(response.data.message); 
+        setReviews(response.data.data); 
 
     } catch (err) {
-        console.error(err);
-        setError("Error de conexión con el servidor. Verifica que la API esté corriendo.");
+        console.error("Error en el análisis:", err);
+        
+        // Manejo de errores detallado con Axios
+        if (err.response) {
+            const status = err.response.status;
+            const detail = err.response.data?.detail;
+
+            if (status === 401 || status === 403) {
+                setError("No tienes permisos suficientes o tu sesión expiró.");
+                alert("Sesión no válida.");
+                navigate('/login');
+            } else {
+                setError(detail || "Error al procesar el archivo en el servidor.");
+            }
+        } else {
+            setError("Error de conexión con el servidor de Koyeb.");
+        }
     } finally {
         setLoading(false);
     }
@@ -124,7 +122,6 @@ const Pagina_Analisis = () => {
               Sube el historial de chat (.txt)
             </h2>
 
-            {/* --- TEXTO DE ADVERTENCIA NUEVO --- */}
             <p className="admin-warning">
                 Debes ser admin para usar esta función
             </p>
@@ -149,7 +146,6 @@ const Pagina_Analisis = () => {
               </span>
             </div>
 
-            {/* MENSAJES DE ESTADO */}
             {error && <div className="status-msg error">{error}</div>}
             {successMsg && <div className="status-msg success">{successMsg}</div>}
 
@@ -172,7 +168,7 @@ const Pagina_Analisis = () => {
                        <div className="spinner"></div>
                        <p>La IA está leyendo el chat...</p>
                    </div>
-               ) : reviews.length > 0 ? (
+               ) : reviews && reviews.length > 0 ? (
                    <div className="reviews-list">
                        {reviews.map((rev, index) => (
                            <div key={index} className="review-card-item">
@@ -197,7 +193,6 @@ const Pagina_Analisis = () => {
             
             <div style={{ height: '45px', flexShrink: 0 }}></div> 
           </section>
-          
         </div>
       </main>
 
