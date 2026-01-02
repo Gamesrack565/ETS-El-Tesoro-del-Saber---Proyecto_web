@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api/axiosConfig'; // IMPORTANTE: Usar tu instancia de Axios
 import './pagina_materias.css'; 
 
 const MallaCurricular = () => {
@@ -16,8 +17,6 @@ const MallaCurricular = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const navigate = useNavigate();
-  
-  const API_BASE_URL = "http://127.0.0.1:8000/api/portal";
 
   // --- DATOS DE LAS MATERIAS ---
   const data = {
@@ -69,7 +68,6 @@ const MallaCurricular = () => {
     const normalizedTerm = normalizeText(term);
     let foundInStandard = false;
 
-    // 1. NORMALES
     for (const [semKey, subjects] of Object.entries(currentMaterias)) {
         const found = subjects.some(subject => normalizeText(subject).includes(normalizedTerm));
         if (found) {
@@ -82,7 +80,6 @@ const MallaCurricular = () => {
         }
     }
 
-    // 2. OPTATIVAS
     if (!foundInStandard) {
         const optativas6 = [...optativasSem6Left, ...optativasSem6Right];
         if (optativas6.some(sub => normalizeText(sub).includes(normalizedTerm))) {
@@ -104,7 +101,7 @@ const MallaCurricular = () => {
     setShowOptativas(false);
   };
 
-  // --- API Y MODAL ---
+  // --- API Y MODAL (Corregido con Axios) ---
   const handleMateriaClick = async (materiaName) => {
     setSelectedMateria(materiaName);
     setIsModalOpen(true);
@@ -112,16 +109,14 @@ const MallaCurricular = () => {
     setResources([]); 
 
     try {
-        const response = await fetch(`${API_BASE_URL}/buscar_por_nombre/?nombre=${encodeURIComponent(materiaName)}`);
-        if (response.ok) {
-            const data = await response.json();
-            setResources(data);
-        } else {
-            console.log("No se encontraron recursos o materia.");
-            setResources([]);
-        }
+        // Usamos la instancia 'api' de Axios que ya tiene la URL de Koyeb
+        const response = await api.get(`/portal/buscar_por_nombre/?nombre=${encodeURIComponent(materiaName)}`);
+        
+        // Axios pone los datos en .data automáticamente
+        setResources(response.data);
     } catch (error) {
-        console.error("Error conectando a la API:", error);
+        console.error("Error al obtener recursos:", error);
+        setResources([]);
     } finally {
         setLoadingResources(false);
     }
@@ -133,11 +128,14 @@ const MallaCurricular = () => {
   };
 
   const handleDownload = (resource) => {
+      // Obtenemos la URL del recurso desde el objeto
       let urlDestino = resource.path || resource.url_or_path;
+      
       if (!urlDestino) {
           alert("Error: No se encontró la ruta del recurso.");
           return;
       }
+
       if (resource.type === 'link' || resource.type === 'video') {
           if (!urlDestino.match(/^https?:\/\//i)) {
               urlDestino = 'https://' + urlDestino;
@@ -145,7 +143,10 @@ const MallaCurricular = () => {
           window.open(urlDestino, '_blank', 'noopener,noreferrer');
       } 
       else {
-          const downloadUrl = `${API_BASE_URL}/download/${resource.id}`;
+          // Para descargas de archivos locales, usamos el endpoint de descarga
+          // Obtenemos la base URL desde la configuración de axios
+          const baseUrl = api.defaults.baseURL;
+          const downloadUrl = `${baseUrl}/portal/download/${resource.id}`;
           window.open(downloadUrl, '_blank');
       }
   };
@@ -222,15 +223,14 @@ const MallaCurricular = () => {
       {/* HEADER */}
       <div className="sticky-header">
           <button className="btn-upload-header" onClick={() => navigate('/subir-recurso')}>
-             ☁ Sube tus archivos aquí
+              ☁ Sube tus archivos aquí
           </button>
           <button className="btn-go-menu" onClick={() => navigate('/menu')}>
-             Menú Principal ➝
+              Menú Principal ➝
           </button>
 
           <h1 className="main-title">Buscador</h1>
           
-          {/* --- AQUÍ ESTÁ EL TEXTO NUEVO --- */}
           <p className="click-instruction">
             Da click en cualquier materia para acceder a sus recursos
           </p>
@@ -306,7 +306,7 @@ const MallaCurricular = () => {
             </div>
             <div className="semester-column">
               <h2 className="semester-number">4</h2>
-              {currentMaterias.sem4?.map((m, i) => 
+              {currentMaterias.sem2?.map((m, i) => 
                 <div key={i} className={`subject-pill${getHighlightClass(m)}`} onClick={() => handleMateriaClick(m)}>{m}</div>
               )}
             </div>
@@ -373,12 +373,6 @@ const MallaCurricular = () => {
                   </div>
               </div>
           </div>
-        )}
-
-        {activeTab !== '1-2' && activeTab !== '3-4' && activeTab !== '5-6' && activeTab !== '7-8' && !showOptativas && (
-             <div style={{textAlign: 'center', color: '#999', marginTop: '50px'}}>
-                {activeTab === '5-6' || activeTab === '7-8' ? 'Selecciona "Optativas" para ver contenido' : 'Contenido próximamente...'}
-             </div>
         )}
       </div>
     </div>
