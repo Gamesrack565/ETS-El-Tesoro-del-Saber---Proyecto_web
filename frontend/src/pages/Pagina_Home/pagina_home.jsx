@@ -22,13 +22,23 @@ function HomePage() {
         }
       }
 
-      // 2. Cargar Top Profesores (Público)
+            // 2. Cargar Top Profesores (Público)
       try {
-        // Ajusta la ruta '/stats' si tu router tiene otro prefijo en el backend
-        const resRanking = await api.get('/stats/top-profesores?limit=4'); 
-        setTopProfesores(resRanking.data);
+        const resRanking = await api.get('/stats/top-profesores?limit=4');
+        
+        // VERIFICACIÓN DE SEGURIDAD:
+        // Si lo que llega ES un array, lo usamos.
+        // Si NO es un array (es null, error, objeto, etc.), usamos una lista vacía [].
+        if (Array.isArray(resRanking.data)) {
+            setTopProfesores(resRanking.data);
+        } else {
+            console.warn("El backend no devolvió una lista, usando lista vacía.");
+            setTopProfesores([]); 
+        }
+
       } catch (error) {
         console.error("Error cargando top profesores:", error);
+        setTopProfesores([]); // En caso de error, también aseguramos que sea lista vacía
       }
     };
 
