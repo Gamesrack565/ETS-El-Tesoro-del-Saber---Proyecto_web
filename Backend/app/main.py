@@ -30,11 +30,13 @@ app = FastAPI(
 # 2. CONFIGURACION DE CORS (CRITICO)
 # Define los orígenes permitidos para evitar bloqueos por políticas del navegador
 # al comunicar el Frontend (React/Vite) con el Backend.
+# 2. CONFIGURACION DE CORS (ACTUALIZADA)
 origins = [
-    "http://localhost:3000",      # Puerto común de React
-    "http://localhost:5173",      # Puerto común de Vite
-    "http://127.0.0.1:3000",
+    os.getenv("FRONTEND_URL"),      # Esto leerá tu link de Vercel desde Koyeb
+    "http://localhost:5173",        # Para que sigas probando en tu PC
+    "http://localhost:3000",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
