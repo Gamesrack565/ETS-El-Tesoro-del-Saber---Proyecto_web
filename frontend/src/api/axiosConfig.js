@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'inclined-gwenette-el-tesoro-del-saber-c25d78f1.koyeb.app',
+  baseURL: 'https://inclined-gwenette-el-tesoro-del-saber-c25d78f1.koyeb.app/api',
 });
 
 // === MAGIA AQUÍ ===
