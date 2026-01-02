@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import api from '../../api/axiosConfig'; // Importamos tu configuración de Axios
 import './pagina_subir.css';
 
 const Pagina_Subir = () => {
@@ -11,41 +12,31 @@ const Pagina_Subir = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [materia, setMateria] = useState('');
-  const [type, setType] = useState('pdf'); // Valores: pdf, video, link, image
+  const [type, setType] = useState('pdf'); 
   const [urlExterna, setUrlExterna] = useState('');
   const [archivo, setArchivo] = useState(null);
 
   // Estados visuales
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null); // Para mensajes de éxito/error
+  const [message, setMessage] = useState(null); 
 
-  // AL CARGAR: Si venimos de "Ver Materias", pre-llenamos el nombre de la materia
+  // AL CARGAR: Verificamos sesión y pre-llenamos materia
   useEffect(() => {
-    // 1. Verificar si hay token al entrar (Opcional, pero buena práctica de seguridad)
     const token = localStorage.getItem('token');
     if (!token) {
-        // Si no hay token, lo mandamos al login de una vez
         alert("Debes iniciar sesión para subir recursos.");
         navigate('/login');
     }
 
-    // 2. Pre-llenar materia si viene del buscador
     if (location.state && location.state.materia) {
       setMateria(location.state.materia);
     }
   }, [location, navigate]);
 
-  // --- MANEJO DE ARCHIVOS (DRAG & DROP) ---
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
+  // --- MANEJO DE ARCHIVOS ---
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => { setIsDragging(false); };
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -53,20 +44,16 @@ const Pagina_Subir = () => {
       setArchivo(e.dataTransfer.files[0]);
     }
   };
-
   const handleFileSelect = (e) => {
     if (e.target.files && e.target.files[0]) {
       setArchivo(e.target.files[0]);
     }
   };
+  const openFileSelector = () => fileInputRef.current.click();
 
-  const openFileSelector = () => {
-    fileInputRef.current.click();
-  };
-
-  // --- ENVÍO DEL FORMULARIO A LA API ---
+  // --- ENVÍO DEL FORMULARIO CON AXIOS ---
   const handleSubmit = async () => {
-    // 1. Validaciones básicas
+    // 1. Validaciones
     if (!title || !materia || !type) {
       setMessage({ type: 'error', text: 'Por favor completa Título, Materia y Tipo.' });
       return;
@@ -80,14 +67,6 @@ const Pagina_Subir = () => {
     if ((type === 'link' || type === 'video') && !urlExterna) {
       setMessage({ type: 'error', text: 'Debes ingresar una URL válida.' });
       return;
-    }
-
-    // 🔥 CORRECCIÓN IMPORTANTE: RECUPERAR EL TOKEN
-    const token = localStorage.getItem('token');
-    if (!token) {
-        setMessage({ type: 'error', text: 'Error de autenticación. Por favor inicia sesión nuevamente.' });
-        setTimeout(() => navigate('/login'), 2000);
-        return;
     }
 
     setLoading(true);
@@ -106,46 +85,45 @@ const Pagina_Subir = () => {
       formData.append('url_externa', urlExterna);
     }
 
-    // 3. Petición Fetch CON TOKEN
+    // 3. Petición con la instancia 'api'
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/portal/', {
-        method: 'POST',
+      // Usamos la ruta relativa al baseURL de tu axiosConfig
+      const response = await api.post('/portal/', formData, {
         headers: {
-            // 🔥 AQUÍ ESTÁ LA CLAVE: Enviamos el token en el header Authorization
-            'Authorization': `Bearer ${token}` 
-            // Nota: No agregamos 'Content-Type' manualmente porque FormData lo hace automático
-        },
-        body: formData,
+            'Content-Type': 'multipart/form-data'
+            // El token se envía automáticamente gracias al Interceptor en axiosConfig
+        }
       });
 
-      if (response.ok) {
-        // Éxito
-        const data = await response.json();
-        setMessage({ type: 'success', text: '¡Recurso subido exitosamente!' });
-        
-        // Limpiamos el formulario
-        setTitle('');
-        setDescription('');
-        setArchivo(null);
-        setUrlExterna('');
-        
-        // Regresamos al portal después de 1.5 segundos
-        setTimeout(() => navigate('/portal'), 1500);
-      } else {
-        // Error del servidor (ej. 401 si el token expiró o 404 si la materia no existe)
-        const errorData = await response.json();
-        
-        // Si el error es de token inválido (401), redirigimos al login
-        if (response.status === 401) {
-             setMessage({ type: 'error', text: 'Tu sesión ha expirado. Redirigiendo al login...' });
-             setTimeout(() => navigate('/login'), 2000);
-        } else {
-             setMessage({ type: 'error', text: `Error: ${errorData.detail || 'No se pudo subir.'}` });
-        }
-      }
+      // Éxito con Axios
+      setMessage({ type: 'success', text: '¡Recurso subido exitosamente!' });
+      
+      // Limpiamos
+      setTitle('');
+      setDescription('');
+      setArchivo(null);
+      setUrlExterna('');
+      
+      setTimeout(() => navigate('/portal'), 1500);
+
     } catch (error) {
-      console.error(error);
-      setMessage({ type: 'error', text: 'Error de conexión con el servidor.' });
+      console.error("Error al subir:", error);
+      
+      if (error.response) {
+        // El servidor respondió con error (4xx o 5xx)
+        const status = error.response.status;
+        const detail = error.response.data?.detail;
+
+        if (status === 401) {
+            setMessage({ type: 'error', text: 'Tu sesión ha expirado. Redirigiendo...' });
+            setTimeout(() => navigate('/login'), 2000);
+        } else {
+            setMessage({ type: 'error', text: `Error: ${detail || 'No se pudo subir.'}` });
+        }
+      } else {
+        // Error de conexión (Koyeb caído o sin internet)
+        setMessage({ type: 'error', text: 'Error de conexión con el servidor.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -160,12 +138,10 @@ const Pagina_Subir = () => {
       <main className="subir-main-content">
         <div className="two-column-layout">
           
-          {/* COLUMNA IZQUIERDA: DATOS */}
           <section className="subir-column">
             <h2 className="column-title">Detalles del Recurso</h2>
             
             <div className="form-box">
-              {/* Grupo 1 */}
               <div>
                   <label>Materia *</label>
                   <input 
@@ -177,7 +153,6 @@ const Pagina_Subir = () => {
                   />
               </div>
 
-              {/* Grupo 2 */}
               <div>
                   <label>Título *</label>
                   <input 
@@ -189,7 +164,6 @@ const Pagina_Subir = () => {
                   />
               </div>
 
-              {/* Grupo 3 */}
               <div>
                   <label>Descripción</label>
                   <textarea 
@@ -200,7 +174,6 @@ const Pagina_Subir = () => {
                   />
               </div>
 
-              {/* Grupo 4 */}
               <div>
                   <label>Tipo de Recurso *</label>
                   <select 
@@ -221,14 +194,12 @@ const Pagina_Subir = () => {
             </div>
           </section>
 
-          {/* COLUMNA DERECHA: ACCIÓN */}
           <section className="subir-column">
             <h2 className="column-title">
               {type === 'pdf' || type === 'image' ? 'Archivo' : 'Enlace'}
             </h2>
             
             <div className="action-box-container">
-                {/* CAJA DRAG & DROP (Flexible) */}
                 {(type === 'pdf' || type === 'image') && (
                     <div 
                         className={`data-box upload-box ${isDragging ? 'dragging' : ''} ${archivo ? 'has-file' : ''}`}
@@ -253,13 +224,12 @@ const Pagina_Subir = () => {
                     </div>
                 )}
 
-                {/* CAJA URL (Fija) */}
                 {(type === 'link' || type === 'video') && (
                     <div className="data-box url-box">
                         <span className="upload-icon">🔗</span>
                         <input 
                             type="url" 
-                            className="input-field"
+                            className="input-field" 
                             placeholder="https://..."
                             value={urlExterna}
                             onChange={(e) => setUrlExterna(e.target.value)}
@@ -267,7 +237,6 @@ const Pagina_Subir = () => {
                     </div>
                 )}
 
-                {/* ZONA DE MENSAJES Y BOTÓN (Siempre abajo) */}
                 <div style={{ width: '100%' }}>
                     {message && (
                         <div className={`status-message ${message.type}`}>
