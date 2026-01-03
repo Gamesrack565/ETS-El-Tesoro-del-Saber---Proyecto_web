@@ -97,38 +97,69 @@ const CalendariosHorarios = () => {
           const miHorarioBD = res.data[res.data.length - 1];
           setHorarioIdActual(miHorarioBD.id);
 
+          // 1. Recolectar todos los intervalos únicos (inicio-fin)
           const intervalosSet = new Set();
           miHorarioBD.items.forEach(item => {
               if (item.hora_grupo && item.hora_grupo.includes("-")) {
-                  const partes = item.hora_grupo.split(" "); 
-                  if (partes.length >= 3) {
-                      const horaFin = partes[partes.length - 1];
-                      const guion = partes[partes.length - 2];
-                      const horaInicio = partes[partes.length - 3];
-                      if (guion === '-') {
-                          intervalosSet.add(`${horaInicio}-${horaFin}`);
-                      }
+                  // Lógica para extraer hora: "Lunes 07:00 - 08:30"
+                  // Usamos regex para ser más precisos
+                  const match = item.hora_grupo.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+                  if (match) {
+                      intervalosSet.add(`${match[1]}-${match[2]}`);
                   }
               }
           });
 
           if (intervalosSet.size === 0) return false;
 
-          const slotsRecuperados = Array.from(intervalosSet).map((intervaloStr, idx) => {
-              const [start, end] = intervaloStr.split('-');
-              return { id: idx + 1, start: start, end: end, type: 'class' };
+          // 2. Ordenar intervalos por hora de inicio
+          let intervalosOrdenados = Array.from(intervalosSet).map(str => {
+              const [start, end] = str.split('-');
+              return { start, end };
           }).sort((a, b) => a.start.localeCompare(b.start));
 
-          setTimeSlots(slotsRecuperados);
+          // 3. RECONSTRUIR HUECOS (DESCANSOS)
+          // Si hay un espacio entre el fin de uno y el inicio del siguiente, es un break.
+          let slotsFinales = [];
+          let idCounter = 1;
 
+          for (let i = 0; i < intervalosOrdenados.length; i++) {
+              const actual = intervalosOrdenados[i];
+              
+              // Agregar el slot de clase actual
+              slotsFinales.push({ id: idCounter++, start: actual.start, end: actual.end, type: 'class' });
+
+              // Mirar el siguiente para ver si hay hueco
+              if (i < intervalosOrdenados.length - 1) {
+                  const siguiente = intervalosOrdenados[i+1];
+                  if (actual.end < siguiente.start) {
+                      // ¡HUECO DETECTADO! Agregamos break
+                      slotsFinales.push({ 
+                          id: `break-${idCounter++}`, 
+                          start: actual.end, 
+                          end: siguiente.start, 
+                          type: 'break' 
+                      });
+                  }
+              }
+          }
+
+          setTimeSlots(slotsFinales);
+
+          // 4. Llenar el grid de materias
           const nuevoStateHorario = {};
           miHorarioBD.items.forEach(item => {
               if (!item.hora_grupo) return;
-              const partes = item.hora_grupo.split(" ");
-              if (partes.length >= 3) {
-                  const horaInicio = partes[partes.length - 3];
-                  const dia = partes.slice(0, partes.length - 3).join(" "); 
-                  const slotMatch = slotsRecuperados.find(s => s.start === horaInicio);
+              
+              // Regex para extraer día y hora inicio
+              // Ej: "Lunes 07:00 - 08:30" -> Dia: "Lunes", Inicio: "07:00"
+              const match = item.hora_grupo.match(/^(.+?)\s+(\d{2}:\d{2})/);
+              if (match) {
+                  const dia = match[1].trim();
+                  const horaInicio = match[2];
+                  
+                  // Buscar el slot que coincida con esa hora de inicio
+                  const slotMatch = slotsFinales.find(s => s.start === horaInicio && s.type === 'class');
 
                   if (slotMatch) {
                       const key = `${dia}-${slotMatch.id}`;
