@@ -84,18 +84,18 @@ function RegisterPage() {
           type="text" 
           id="career" 
           name="career"
-          placeholder="Ej. Ingeniería en Sistemas" 
+          placeholder="Ej. Ingeniería en Sistemas, IA, ISC, etc..." 
           value={formData.career}
           onChange={handleChange}
         />
 
         {/* Correo */}
-        <label htmlFor="email">Correo Institucional</label>
+        <label htmlFor="email">Correo</label>
         <input 
           type="email" 
           id="email" 
           name="email"
-          placeholder="correo@ipn.mx" 
+          placeholder="correo@gmail.com" 
           value={formData.email}
           onChange={handleChange}
         />
