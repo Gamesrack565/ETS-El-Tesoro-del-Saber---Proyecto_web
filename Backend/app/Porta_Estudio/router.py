@@ -149,3 +149,17 @@ def buscar_recursos_por_materia(
         )
 
     return crud.get_resources_by_materia(db, materia_id=materia_db.id)
+
+@router.delete("/debug/limpiar_todo")
+def limpiar_base_de_datos(db: Session = Depends(get_db)):
+    """
+    ⚠️ PELIGRO: Borra TODOS los recursos de la base de datos.
+    Úsalo solo para limpiar datos viejos con rutas rotas.
+    """
+    try:
+        num_borrados = db.query(modelos.Resource).delete()
+        db.commit()
+        return {"mensaje": f"Limpieza completada. Se eliminaron {num_borrados} recursos."}
+    except Exception as e:
+        db.rollback()
+        return {"error": f"No se pudo limpiar: {str(e)}"}
