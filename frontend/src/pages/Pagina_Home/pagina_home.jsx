@@ -182,8 +182,8 @@ function HomePage() {
 
       {/* --- Pie de página --- */}
       <footer className="home-footer">
-        <p>Contáctanos: correo@dominio.com</p>
-        <p>55 1122 3344</p>
+        <p>Contáctanos: el.tesoro.del.saber.ets@gmail.com</p>
+        <p>@ets7_el_tesoro_del_saber</p>
       </footer>
 
     </div>
