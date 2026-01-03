@@ -88,3 +88,64 @@ async def subir_recurso(
         path=path_final, materia_id=materia_db.id,
         user_id=current_user.id, content_text=texto_extraido
     )
+
+@router.get("/download/{resource_id}")
+def download_resource(resource_id: int, db: Session = Depends(get_db)):
+    recurso = db.query(modelos.Resource).filter(modelos.Resource.id == resource_id).first()
+
+    if not recurso:
+        raise HTTPException(status_code=404, detail="Recurso no encontrado")
+
+    if recurso.type == modelos.ResourceType.LINK:
+        return {"url": recurso.url_or_path, "is_link": True}
+
+    # El file_path ya es absoluto gracias a la corrección en el POST
+    file_path = recurso.url_or_path
+
+    if not os.path.exists(file_path):
+        # 🔍 DEBUG: Imprimimos en logs para ver qué falló
+        print(f"ERROR: Archivo no hallado en {file_path}")
+        print(f"Contenido de {UPLOAD_DIR}: {os.listdir(UPLOAD_DIR) if os.path.exists(UPLOAD_DIR) else 'No existe'}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"El archivo físico no existe en la ruta registrada."
+        )
+
+    nombre_descarga = file_path.split("-", 1)[-1] if "-" in file_path else "archivo"
+    
+    return FileResponse(
+        file_path,
+        media_type="application/octet-stream",
+        filename=nombre_descarga
+    )
+
+
+@router.get(
+    "/buscar_por_nombre/",
+    response_model=List[esquemas.ResourceResponse]
+)
+def buscar_recursos_por_materia(
+    nombre: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Busca recursos asociados a una materia dada su nombre.
+
+    Utiliza la búsqueda de materias existente para resolver el ID
+    y luego filtra los recursos.
+
+    Args:
+        nombre (str): Nombre de la materia.
+        db (Session): Sesión de base de datos.
+
+    Returns:
+        List[ResourceResponse]: Lista de recursos encontrados.
+    """
+    materia_db = crud_catalogos.get_materia_by_name(db, nombre)
+    if not materia_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Materia '{nombre}' no encontrada."
+        )
+
+    return crud.get_resources_by_materia(db, materia_id=materia_db.id)
