@@ -23,7 +23,7 @@ const MallaCurricular = () => {
     IA: {
       sem1: ["Fundamentos de Programación", "Matemáticas Discretas", "Cálculo", "Comunicación Oral y Escrita", "Mecánica y Electromagnetismo", "Fundamentos Económicos"],
       sem2: ["Algoritmos y Estructuras de Datos", "Fundamentos de Diseño Digital", "Cálculo Aplicado", "Ingeniería, Ética y Sociedad", "Álgebra Lineal", "Finanzas Empresariales"],
-      sem3: ["Análisis y Diseño de Algoritmos", "Paradigmas de Programación", "Ecuaciones Diferenciales", "Bases de Datos", "Diseño de Sistemas Digitales", "Liderazgo Personal"],
+      sem3: ["Análisis y Diseño de Algoritmos", "Paradigmas de Programación", "Ecuaciones Diferenciales", "Base de Datos", "Diseño de Sistemas Digitales", "Liderazgo Personal"],
       sem4: ["Fundamentos de Inteligencia Artificial", "Probabilidad y Estadística", "Matemáticas Avanzadas para la Ingenieria", "Tecnologías para el Desarrollo de Aplicaciones Web", "Análisis y Diseño de Sistemas", "Procesamiento Digital de Imagenes"],
       sem5: ["Aprendizaje de Máquina", "Visión Artificial", "Teoría de la Computación", "Procesamiento de Señales", "Algoritmos Bioinspirados", "Tecnologías de Lenguaje Natural"],
       sem6: ["Cómputo Paralelo", "Redes Neuronales y Aprendizaje Profundo", "Ingeniería de Software para Sistemas Inteligentes", "Optativa A", "Optativa B", "Metodología de la Investigación y Divulgación Científica"],
