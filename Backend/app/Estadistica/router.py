@@ -102,17 +102,12 @@ def mejores_profesores(limit: int = 5, db: Session = Depends(get_db)):
     "/actividad-reciente",
     response_model=List[esquemas.ActividadReciente]
 )
+@router.get("/actividad-reciente")
 def actividad_reciente(db: Session = Depends(get_db)):
     """
-    Obtiene las ultimas reseñas creadas en la plataforma.
-
-    Args:
-        db (Session): Sesion de base de datos.
-
-    Returns:
-        List[ActividadReciente]: Lista de las ultimas 5 reseñas.
+    Obtiene las ultimas reseñas para la sección de actividad reciente.
     """
-    # Obtenemos las últimas 5 reseñas con el objeto completo
+    # Obtenemos las últimas 5 reseñas
     resenas = db.query(Resena).order_by(desc(Resena.id)).limit(5).all()
 
     return [
@@ -124,6 +119,7 @@ def actividad_reciente(db: Session = Depends(get_db)):
             "dificultad": r.dificultad,
             "total_votos_utiles": r.total_votos_utiles,
             "comentario": r.comentario,
+            "comentario_corto": (r.comentario[:40] + "...") if r.comentario else "Sin comentario"
         }
         for r in resenas
     ]
