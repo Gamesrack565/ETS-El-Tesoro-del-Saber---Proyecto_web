@@ -124,7 +124,6 @@ def actividad_reciente(db: Session = Depends(get_db)):
             "dificultad": r.dificultad,
             "total_votos_utiles": r.total_votos_utiles,
             "comentario": r.comentario,
-            "created_at": r.created_at
         }
         for r in resenas
     ]
