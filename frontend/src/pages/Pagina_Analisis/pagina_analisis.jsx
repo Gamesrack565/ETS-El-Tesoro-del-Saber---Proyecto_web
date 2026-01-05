@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../api/axiosConfig'; // Importamos tu instancia de axios personalizada
+import api from '../../api/axiosConfig';
 import './pagina_analisis.css';
 
 const Pagina_Analisis = () => {
@@ -72,26 +72,20 @@ const Pagina_Analisis = () => {
     formData.append('file', archivo);
 
     try {
-        // Usamos la instancia 'api'. El interceptor agregará automáticamente el Token.
-        // La ruta es relativa a la baseURL (que ya termina en /api)
         const response = await api.post('/ia/process_reviews', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
 
-        // Con Axios, los datos están en response.data
         setSuccessMsg(response.data.message); 
         setReviews(response.data.data); 
 
     } catch (err) {
         console.error("Error en el análisis:", err);
-        
-        // Manejo de errores detallado con Axios
         if (err.response) {
             const status = err.response.status;
             const detail = err.response.data?.detail;
-
             if (status === 401 || status === 403) {
                 setError("No tienes permisos suficientes o tu sesión expiró.");
                 alert("Sesión no válida.");
@@ -121,6 +115,12 @@ const Pagina_Analisis = () => {
             <h2 className="column-title">
               Sube el historial de chat (.txt)
             </h2>
+
+            {/* --- TEXTO EN ROJO AGREGADO --- */}
+            <p className="admin-warning" style={{ fontWeight: 'bold', marginBottom: '15px' }}>
+              Para subir un archivo de prueba visita nuestro repositorio y siga las instrucciones de INSTRUCCIONES.txt: <a href="https://github.com/Gamesrack565/ETS-El-Tesoro-del-Saber---Proyecto_web" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>https://github.com/Gamesrack565/ETS-El-Tesoro-del-Saber---Proyecto_web</a>
+            </p>
+            {/* -------------------------------- */}
 
             <p className="admin-warning">
                 Debes ser admin para usar esta función
