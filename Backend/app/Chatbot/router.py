@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import google.generativeai as genai
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from google.api_core import exceptions
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from app.Porta_Estudio import modelos as study_models
 
 load_dotenv()
 
+
 # ==========================================
 # CONFIGURACION Y GESTOR DE LLAVES
 # ==========================================
@@ -30,6 +31,7 @@ class KeyManager:
     """
 
     def __init__(self):
+        """Inicializa el gestor cargando las llaves desde el entorno."""
         self.keys = [
             os.getenv("GEMINI_API_KEY_4"),
             os.getenv("GEMINI_API_KEY_5"),
@@ -49,9 +51,11 @@ class KeyManager:
         self.current_index = 0
 
     def get_current_key(self):
+        """Devuelve la llave de API activa actualmente."""
         return self.keys[self.current_index]
 
     def switch_key(self):
+        """Cambia a la siguiente llave disponible en la lista (rotación)."""
         prev = self.current_index
         self.current_index = (self.current_index + 1) % len(self.keys)
         print(
@@ -65,7 +69,7 @@ key_manager = KeyManager()
 genai.configure(api_key=key_manager.get_current_key())
 
 AVAILABLE_MODELS = [
-    'gemini-2.5-flash-lite', # Ajustado a versiones estables si es necesario
+    'gemini-2.5-flash-lite',
     'gemini-2.5-flash'
 ]
 
@@ -73,8 +77,12 @@ AVAILABLE_MODELS = [
 # ==========================================
 # GENERADOR INTELIGENTE (WRAPPER IA)
 # ==========================================
+
 def generate_smart(prompt: str, max_retries: int = 2) -> str:
-    """Genera contenido usando Google Gemini con manejo de errores y rotacion."""
+    """
+    Genera contenido usando Google Gemini con manejo de errores y rotacion
+    de modelos y llaves de API.
+    """
     model_index = 0
     total_attempts = max_retries * len(AVAILABLE_MODELS)
 
@@ -104,7 +112,10 @@ def generate_smart(prompt: str, max_retries: int = 2) -> str:
                 continue
 
         except Exception:
-            return "Lo siento, tuve un error interno al procesar tu solicitud."
+            return (
+                "Lo siento, tuve un error interno al "
+                "procesar tu solicitud."
+            )
 
     return "El sistema esta saturado en este momento."
 
@@ -112,13 +123,18 @@ def generate_smart(prompt: str, max_retries: int = 2) -> str:
 # ==========================================
 # LIMITADOR DE TASA (RATE LIMITING)
 # ==========================================
+
 LIMITE_PREGUNTAS = 150   # Maximo de preguntas permitidas
 VENTANA_TIEMPO_HORAS = 2  # Ventana de tiempo en horas
 
 
 def verificar_limite_usuario(user_id: int, db: Session) -> bool:
+    """
+    Verifica si el usuario ha excedido el límite de preguntas permitidas
+    en una ventana de tiempo específica.
+    """
     if not user_id:
-        return True # Invitados no tienen limite (o podrias bloquearlos)
+        return True  # Invitados no tienen limite
 
     tiempo_limite = datetime.utcnow() - timedelta(hours=VENTANA_TIEMPO_HORAS)
 
@@ -129,7 +145,7 @@ def verificar_limite_usuario(user_id: int, db: Session) -> bool:
     ).count()
 
     if cantidad >= LIMITE_PREGUNTAS:
-        return False 
+        return False
 
     return True
 
@@ -137,7 +153,12 @@ def verificar_limite_usuario(user_id: int, db: Session) -> bool:
 # ==========================================
 # FUNCIONES DE MEMORIA
 # ==========================================
+
 def recuperar_historial(user_id: int, db: Session, limite: int = 6) -> str:
+    """
+    Recupera los últimos mensajes de la conversación del usuario
+    para mantener el contexto del chat.
+    """
     if not user_id:
         return ""
 
@@ -159,13 +180,22 @@ def recuperar_historial(user_id: int, db: Session, limite: int = 6) -> str:
 
 
 def guardar_interaccion(user_id: int, pregunta: str, respuesta: str, db: Session):
+    """Guarda la pregunta del usuario y la respuesta de la IA en la base de datos."""
     if not user_id:
-        return 
+        return
 
     try:
-        msg_user = HistorialChat(user_id=user_id, role="user", content=pregunta)
+        msg_user = HistorialChat(
+            user_id=user_id,
+            role="user",
+            content=pregunta
+        )
         db.add(msg_user)
-        msg_bot = HistorialChat(user_id=user_id, role="model", content=respuesta)
+        msg_bot = HistorialChat(
+            user_id=user_id,
+            role="model",
+            content=respuesta
+        )
         db.add(msg_bot)
         db.commit()
     except Exception as e:
@@ -175,19 +205,26 @@ def guardar_interaccion(user_id: int, pregunta: str, respuesta: str, db: Session
 # ==========================================
 # FUNCIONES AUXILIARES DE LOGICA
 # ==========================================
+
 def check_local_intent(text: str, db: Session):
-    """Verifica intenciones basicas locales para respuestas rapidas."""
+    """
+    Verifica intenciones básicas y palabras clave para proporcionar
+    respuestas instantáneas sin consultar a la IA.
+    """
     text = text.lower().strip()
-    
+
     # --- SALUDOS ---
     saludos = ["hola", "buenos dias", "buenas", "que tal"]
     if any(x in text for x in saludos):
-        return "Hola! Soy el asistente de ESCOM Review Hub. ¿En qué materia te puedo ayudar hoy?"
+        return (
+            "Hola! Soy el asistente de ESCOM Review Hub. "
+            "¿En qué materia te puedo ayudar hoy?"
+        )
 
     # --- IDENTIDAD ---
     if "quien te creo" in text or "que es esto" in text:
         return "Soy el asistente virtual de ESCOM Review Hub."
-    
+
     if "genero te identificas" in text or "cual es tu genero" in text:
         return "Amigo, soy una IA, no tengo género ni sentimientos."
 
@@ -202,48 +239,80 @@ def check_local_intent(text: str, db: Session):
 
     # --- FUNCIONALIDADES PLATAFORMA ---
     if "subo un archivo" in text or "puedo subir un archivo" in text:
-        return "Para subir un recurso, ve a la sección del Portal Estudiantil y selecciona la materia."
+        return (
+            "Para subir un recurso, ve a la sección del Portal "
+            "Estudiantil y selecciona la materia."
+        )
 
-    pass_keys = ["cambiar contraseña", "olvidé mi contraseña", "recuperar contraseña"]
+    pass_keys = [
+        "cambiar contraseña", "olvidé mi contraseña", "recuperar contraseña"
+    ]
     if any(k in text for k in pass_keys):
-        return "Puedes restablecer tu contraseña haciendo click aquí: [LINK_RECUPERAR_PASS]"
+        return (
+            "Puedes restablecer tu contraseña haciendo click aquí: "
+            "[LINK_RECUPERAR_PASS]"
+        )
 
     # --- ESCOM INFO ---
     if "justificantes" in text or "subir justificante" in text:
-        return "Puedes gestionar tu justificante en este enlace: [LINK_JUSTIFICANTES_ESCOM]"
+        return (
+            "Puedes gestionar tu justificante en este enlace: "
+            "[LINK_JUSTIFICANTES_ESCOM]"
+        )
 
     loc_keys = ["donde esta escom", "ubicacion de escom", "direccion"]
     if any(k in text for k in loc_keys):
-        return "ESCOM se encuentra en Av. IPN 2580, Nueva Industrial Vallejo, GAM, CDMX, C.P. 07738."
+        return (
+            "ESCOM se encuentra en Av. IPN 2580, Nueva Industrial Vallejo, "
+            "GAM, CDMX, C.P. 07738."
+        )
 
-    calif_keys = ["dia calificaciones", "cuando salen las calificaciones", "fecha limite calificaciones"]
+    calif_keys = [
+        "dia calificaciones", "cuando salen las calificaciones",
+        "fecha limite calificaciones"
+    ]
     if any(k in text for k in calif_keys):
-        return "Según el calendario, el último día del semestre 2025-2 es el 16/01/25."
+        return (
+            "Según el calendario, el último día del semestre 2025-2 "
+            "es el 16/01/25."
+        )
 
     ets_keys = ["cuando son los ets", "fecha de los ets", "dia de los ets"]
     if any(k in text for k in ets_keys):
-        return "Las fechas de ETS están en el calendario oficial. Recuerda generar tu línea de captura en el SAES."
+        return (
+            "Las fechas de ETS están en el calendario oficial. "
+            "Recuerda generar tu línea de captura en el SAES."
+        )
 
     english_keys = ["cursos de inglés", "celex", "ingles"]
     if any(k in text for k in english_keys):
-        return "El CELEX ESCOM ofrece cursos. Revisa su Facebook o la web oficial para las convocatorias."
+        return (
+            "El CELEX ESCOM ofrece cursos. Revisa su Facebook o la web "
+            "oficial para las convocatorias."
+        )
 
     health_keys = ["me siento mal", "servicio medico", "enfermeria"]
     if any(k in text for k in health_keys):
-        return "Puedes acudir al consultorio médico de ESCOM en el edificio de servicios escolares."
+        return (
+            "Puedes acudir al consultorio médico de ESCOM en el "
+            "edificio de servicios escolares."
+        )
 
     # --- EASTER EGGS ---
     jokes_keys = ["sentido de la vida", "chiste", "hazme reir"]
     if any(k in text for k in jokes_keys):
-        return "El sentido de la vida es que tu código compile sin warnings. ¡Sigue estudiando!"
+        return (
+            "El sentido de la vida es que tu código compile sin warnings. "
+            "¡Sigue estudiando!"
+        )
 
     return None
 
 
 def detectar_materia_automatica(texto: str, db: Session):
     """
-    Intenta detectar el nombre de una materia. 
-    MEJORADO: Usa conjuntos (sets) para evitar falsos positivos con palabras comunes.
+    Intenta detectar el nombre de una materia dentro de un texto dado
+    usando intersección de palabras clave.
     """
     texto = texto.lower()
     # Tokenizamos el texto del usuario (palabras sueltas)
@@ -258,7 +327,7 @@ def detectar_materia_automatica(texto: str, db: Session):
 
     for mat_id, mat_nombre in materias:
         nombre_clean = mat_nombre.lower()
-        
+
         # 1. Coincidencia Exacta (Prioridad Maxima)
         if nombre_clean in texto:
             return mat_id, mat_nombre
@@ -267,11 +336,12 @@ def detectar_materia_automatica(texto: str, db: Session):
         tokens_materia = set(re.findall(r'\w+', nombre_clean))
         # Filtramos palabras irrelevantes cortas (de, la, i, ii)
         tokens_importantes = {t for t in tokens_materia if len(t) > 2}
-        
-        if not tokens_importantes: continue
+
+        if not tokens_importantes:
+            continue
 
         coincidencias = len(tokens_usuario.intersection(tokens_importantes))
-        
+
         # Necesitamos al menos una palabra relevante coincidente
         if coincidencias > 0:
             if coincidencias > max_matches:
@@ -284,20 +354,27 @@ def detectar_materia_automatica(texto: str, db: Session):
 def generar_y_guardar_recursos_auto(
     materia_id: int, materia_nombre: str, db: Session
 ):
-    """Genera recursos academicos usando IA."""
-    print(f"IA: Generando recursos automaticos para '{materia_nombre}'...")
+    """
+    Utiliza la IA para generar sugerencias de recursos académicos
+    cuando una materia no tiene materiales registrados.
+    """
+    print(f"IA: Generando recursos para '{materia_nombre}'...")
 
     prompt = (
-        f'Actúa como profesor experto de: "{materia_nombre}". Genera 3 recursos.\n'
+        f'Actúa como profesor experto de: "{materia_nombre}". '
+        'Genera 3 recursos.\n'
         'Descripciones MUY BREVES (Max 20 palabras).\n'
         'JSON FORMAT:\n'
-        '[{"titulo": "X", "tipo": "video/pdf/link", "url": "url", "desc": "txt"}]'
+        '[{"titulo": "X", "tipo": "video/pdf/link", '
+        '"url": "url", "desc": "txt"}]'
     )
 
     json_text = generate_smart(prompt)
 
     try:
-        clean_text = json_text.replace("```json", "").replace("```", "").strip()
+        clean_text = json_text.replace(
+            "```json", ""
+        ).replace("```", "").strip()
         match = re.search(r'\[.*\]', clean_text, re.DOTALL)
         if match:
             clean_text = match.group(0)
@@ -313,19 +390,21 @@ def generar_y_guardar_recursos_auto(
 
         # --- CAMBIO: OBTENER ID DEL SISTEMA DESDE ENV ---
         system_user_id = int(os.getenv("SYSTEM_USER_ID", "1"))
-        # ------------------------------------------------
 
         for item in datos:
             desc_segura = item.get("desc", "Generado por Gemini")[:250]
-            
+
             nuevo = study_models.Resource(
                 title=item.get("titulo", "Recurso IA"),
                 description=desc_segura,
-                type=tipo_map.get(item.get("tipo"), study_models.ResourceType.LINK),
+                type=tipo_map.get(
+                    item.get("tipo"),
+                    study_models.ResourceType.LINK
+                ),
                 url_or_path=item.get("url", "#"),
                 content_text=f"Recurso recomendado: {item.get('desc')}",
                 materia_id=materia_id,
-                user_id=system_user_id  # <--- ID DINAMICO AQUI
+                user_id=system_user_id
             )
             db.add(nuevo)
             nuevos_recursos.append(nuevo)
@@ -342,6 +421,7 @@ def generar_y_guardar_recursos_auto(
 # ==========================================
 # ENDPOINT PRINCIPAL
 # ==========================================
+
 router = APIRouter()
 
 
@@ -350,6 +430,10 @@ def preguntar_al_bot(
     pregunta: esquemas.PreguntaChat,
     db: Session = Depends(get_db)
 ):
+    """
+    Endpoint principal para interactuar con el Chatbot. Maneja límites,
+    historial, detección de materia y generación de respuestas.
+    """
     user_query = pregunta.texto
     user_id = pregunta.user_id
     materia_actual_id = pregunta.materia_id
@@ -358,9 +442,11 @@ def preguntar_al_bot(
     # 1. Verificar Limite
     puede_preguntar = verificar_limite_usuario(user_id, db)
     if not puede_preguntar:
-        # Idealmente cambiar esto por raise HTTPException(status_code=429)
         return {
-            "respuesta": "Me tengo que retirar por el momento, he alcanzado mi límite de respuestas por hoy."
+            "respuesta": (
+                "Me tengo que retirar por el momento, he alcanzado "
+                "mi límite de respuestas por hoy."
+            )
         }
 
     # 2. Recuperar Historial
@@ -368,10 +454,10 @@ def preguntar_al_bot(
 
     # 3. Deteccion de Materia (Si no viene en el request)
     if not materia_actual_id:
-        detectado_id, detectado_nombre = detectar_materia_automatica(user_query, db)
-        if detectado_id:
-            materia_actual_id = detectado_id
-            nombre_materia_detectada = detectado_nombre
+        det_id, det_nom = detectar_materia_automatica(user_query, db)
+        if det_id:
+            materia_actual_id = det_id
+            nombre_materia_detectada = det_nom
 
     # 4. Logica Local (Respuestas rapidas)
     if not materia_actual_id:
@@ -398,23 +484,24 @@ def preguntar_al_bot(
 
     mensaje_sistema = ""
     if not recursos:
-        # Intentamos obtener el nombre si solo tenemos el ID
         if not nombre_materia_detectada:
             mat_obj = db.query(main_models.Materia).filter(
                 main_models.Materia.id == materia_actual_id
             ).first()
-            nombre_materia_detectada = mat_obj.nombre if mat_obj else "Materia"
+            nombre_materia_detectada = (
+                mat_obj.nombre if mat_obj else "Materia"
+            )
 
         recursos = generar_y_guardar_recursos_auto(
             materia_actual_id, nombre_materia_detectada, db
         )
         mensaje_sistema = "He buscado nuevas referencias para ti.\n"
 
-    # Contexto visual limitado (Max 1500 chars por recurso para no saturar)
+    # Contexto visual limitado (Max 1000 chars por recurso)
     lista_links = []
     contexto_recursos = ""
     for res in recursos:
-        texto_limpio = (res.content_text or "")[:1000] 
+        texto_limpio = (res.content_text or "")[:1000]
         contexto_recursos += f"--- {res.title} ---\n{texto_limpio}\n"
         lista_links.append(f"🔗 [{res.title}]({res.url_or_path})")
 
@@ -423,7 +510,10 @@ def preguntar_al_bot(
     # 7. Modo Turbo (Solo links)
     keywords_recursos = ["recursos", "material", "links", "bibliografia"]
     if any(k in user_query.lower() for k in keywords_recursos) and recursos:
-        resp_turbo = f"Aquí tienes los materiales para {nombre_materia_detectada}:\n\n{texto_links}"
+        resp_turbo = (
+            f"Aquí tienes los materiales para "
+            f"{nombre_materia_detectada}:\n\n{texto_links}"
+        )
         guardar_interaccion(user_id, user_query, resp_turbo, db)
         return {"respuesta": resp_turbo}
 
@@ -440,6 +530,6 @@ def preguntar_al_bot(
 
     respuesta_ia = generate_smart(prompt)
     respuesta_final = f"{respuesta_ia}\n\n**Fuentes:**\n{texto_links}"
-    
+
     guardar_interaccion(user_id, user_query, respuesta_final, db)
     return {"respuesta": respuesta_final}

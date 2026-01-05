@@ -1,7 +1,3 @@
-# Version: 2.0
-# Archivo: Chatbot/esquemas.py
-# Descripción: Definición de esquemas de datos para la comunicación
-
 from typing import Optional
 from pydantic import BaseModel
 

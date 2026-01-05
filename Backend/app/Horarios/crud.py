@@ -1,14 +1,8 @@
 from typing import List
-
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-
 from app.Horarios import esquemas, modelos
 
-
-# ==========================================
-# 1. FUNCIONES AUXILIARES (Logica de Tiempo)
-# ==========================================
 
 def parse_hora_a_minutos(hora_str: str) -> int:
     """
@@ -37,19 +31,20 @@ def validar_choques(items: List[esquemas.ItemCreate]):
         try:
             # 1. Separar el rango: "Lunes 07:00" y "08:30"
             partes_rango = item.hora_grupo.split("-")
-            parte_izquierda = partes_rango[0].strip() # "Lunes 07:00"
-            hora_fin_str = partes_rango[1].strip()    # "08:30"
+            parte_izquierda = partes_rango[0].strip()  # "Lunes 07:00"
+            hora_fin_str = partes_rango[1].strip()     # "08:30"
 
             # 2. Separar Día y Hora de inicio
-            # Dividimos por espacios. El último elemento es la hora, el resto es el día
+            # Dividimos por espacios. El último elemento es la hora,
+            # el resto es el día.
             datos_inicio = parte_izquierda.split(" ")
-            
+
             if len(datos_inicio) < 2:
-                # Si no tiene formato "Dia Hora", saltamos validación (o lanzamos error)
+                # Si no tiene formato "Dia Hora", saltamos validación
                 continue
-                
-            hora_inicio_str = datos_inicio[-1] # "07:00"
-            # Unimos el resto por si el día fuera compuesto (ej. no aplica aquí pero es seguro)
+
+            hora_inicio_str = datos_inicio[-1]  # "07:00"
+            # Unimos el resto por si el día fuera compuesto
             dia = " ".join(datos_inicio[:-1])  # "Lunes"
 
             # 3. Convertir a minutos
@@ -70,7 +65,8 @@ def validar_choques(items: List[esquemas.ItemCreate]):
                             status_code=status.HTTP_400_BAD_REQUEST,
                             detail=(
                                 f"Choque de horario el {dia}: La materia "
-                                f"(ID {item.materia_id}) se cruza con otra materia existente."
+                                f"(ID {item.materia_id}) se cruza con "
+                                "otra materia existente."
                             )
                         )
 
@@ -84,11 +80,10 @@ def validar_choques(items: List[esquemas.ItemCreate]):
             continue
 
 
-# ==========================================
-# 2. FUNCIONES CRUD PRINCIPALES
-# ==========================================
-
 def get_my_horarios(db: Session, user_id: int):
+    """
+    Retorna todos los horarios del usuario.
+    """
     return db.query(modelos.Horario).filter(
         modelos.Horario.user_id == user_id
     ).all()
@@ -99,6 +94,10 @@ def create_horario(
     horario: esquemas.HorarioCreate,
     user_id: int
 ):
+    """
+    Crea un horario con sus items asociados.
+    Retorna el horario creado.
+    """
     # --- PASO 0: VALIDAR CHOQUES ---
     validar_choques(horario.items)
 
@@ -138,6 +137,10 @@ def create_horario(
 
 
 def delete_horario(db: Session, horario_id: int, user_id: int) -> bool:
+    """
+    Elimina un horario si pertenece al usuario.
+    Retorna True si se eliminó, False si no se encontró.
+    """
     horario = db.query(modelos.Horario).filter(
         modelos.Horario.id == horario_id,
         modelos.Horario.user_id == user_id

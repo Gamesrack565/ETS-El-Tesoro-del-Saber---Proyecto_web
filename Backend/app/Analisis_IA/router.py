@@ -1,11 +1,5 @@
-# Version: 3.0
-# Archivo: Analisis_IA/router.py
-# Descripción: Router para procesar archivos de historial de chat y
-# extraer reseñas usando IA.
-
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
-
 from app import dependencias
 from app.Analisis_IA import analyzer, parser
 from app.Creacion_mats_prof import crud as crud_catalogos

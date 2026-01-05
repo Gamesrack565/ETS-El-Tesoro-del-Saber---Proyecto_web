@@ -21,19 +21,19 @@ Base.metadata.create_all(bind=engine)
 # Configuración de la aplicación FastAPI
 app = FastAPI(
     title="El Tesoro del Saber (ETS) - Backend",
-    version="1.0.0",
+    version="3.0.0",
     description=(
-        "Backend unificado para Chatbot, Reseñas, Horarios y Recursos."
+        "API del servicio El Tesoro del Saber(ETS) para la gestión de usuarios"
     )
 )
 
 # 2. CONFIGURACION DE CORS (CRITICO)
-# Define los orígenes permitidos para evitar bloqueos por políticas del navegador
+# Define los orígenes permitidos para evitar bloqueos por políticas
 # al comunicar el Frontend (React/Vite) con el Backend.
 # 2. CONFIGURACION DE CORS (ACTUALIZADA)
 origins = [
-    os.getenv("FRONTEND_URL"),      # Esto leerá tu link de Vercel desde Koyeb
-    "http://localhost:5173",        # Para que sigas probando en tu PC
+    os.getenv("FRONTEND_URL"),
+    "http://localhost:5173",
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
@@ -41,10 +41,10 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # Dominios permitidos
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],          # Permitir todos los métodos (GET, POST...)
-    allow_headers=["*"],          # Permitir todos los headers (Tokens, etc.)
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # 3. Configuración de Archivos Estáticos (Uploads)
@@ -112,4 +112,4 @@ def read_root():
     Returns:
         dict: Mensaje de confirmación de funcionamiento.
     """
-    return {"message": "API del Portal ESCOM funcionando al 100%"}
+    return {"message": "API del Portal ETS funcionando al 100%"}

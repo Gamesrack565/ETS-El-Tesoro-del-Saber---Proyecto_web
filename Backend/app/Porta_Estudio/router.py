@@ -34,6 +34,7 @@ if not os.path.exists(UPLOAD_DIR):
     except Exception as e:
         print(f"Error creando UPLOAD_DIR: {e}")
 
+
 @router.post("/", response_model=esquemas.ResourceResponse)
 async def subir_recurso(
     title: str = Form(...),
@@ -43,7 +44,9 @@ async def subir_recurso(
     file: UploadFile = File(None),
     url_externa: str = Form(None),
     db: Session = Depends(get_db),
-    current_user: user_schemas.UserResponse = Depends(dependencias.get_current_user)
+    current_user: user_schemas.UserResponse = Depends(
+        dependencias.get_current_user
+    )
 ):
     materia_db = crud_catalogos.get_materia_by_name(db, materia_nombre)
     if not materia_db:
@@ -71,7 +74,9 @@ async def subir_recurso(
         if type == modelos.ResourceType.PDF.value:
             try:
                 reader = PdfReader(file_location)
-                texto_completo = "".join([page.extract_text() or "" for page in reader.pages])
+                texto_completo = "".join(
+                    [page.extract_text() or "" for page in reader.pages]
+                )
                 texto_extraido = texto_completo[:60000]
             except Exception as e:
                 print(f"Error leyendo PDF: {e}")
@@ -89,9 +94,12 @@ async def subir_recurso(
         user_id=current_user.id, content_text=texto_extraido
     )
 
+
 @router.get("/download/{resource_id}")
 def download_resource(resource_id: int, db: Session = Depends(get_db)):
-    recurso = db.query(modelos.Resource).filter(modelos.Resource.id == resource_id).first()
+    recurso = db.query(modelos.Resource).filter(
+        modelos.Resource.id == resource_id
+    ).first()
 
     if not recurso:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
@@ -105,14 +113,20 @@ def download_resource(resource_id: int, db: Session = Depends(get_db)):
     if not os.path.exists(file_path):
         # 🔍 DEBUG: Imprimimos en logs para ver qué falló
         print(f"ERROR: Archivo no hallado en {file_path}")
-        print(f"Contenido de {UPLOAD_DIR}: {os.listdir(UPLOAD_DIR) if os.path.exists(UPLOAD_DIR) else 'No existe'}")
+        lista_dir = (
+            os.listdir(UPLOAD_DIR) if os.path.exists(UPLOAD_DIR)
+            else 'No existe'
+        )
+        print(f"Contenido de {UPLOAD_DIR}: {lista_dir}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"El archivo físico no existe en la ruta registrada."
+            detail="El archivo físico no existe en la ruta registrada."
         )
 
-    nombre_descarga = file_path.split("-", 1)[-1] if "-" in file_path else "archivo"
-    
+    nombre_descarga = (
+        file_path.split("-", 1)[-1] if "-" in file_path else "archivo"
+    )
+
     return FileResponse(
         file_path,
         media_type="application/octet-stream",
@@ -150,16 +164,19 @@ def buscar_recursos_por_materia(
 
     return crud.get_resources_by_materia(db, materia_id=materia_db.id)
 
+
 @router.delete("/debug/limpiar_todo")
 def limpiar_base_de_datos(db: Session = Depends(get_db)):
     """
-    ⚠️ PELIGRO: Borra TODOS los recursos de la base de datos.
+    PELIGRO: Borra TODOS los recursos de la base de datos.
     Úsalo solo para limpiar datos viejos con rutas rotas.
     """
     try:
         num_borrados = db.query(modelos.Resource).delete()
         db.commit()
-        return {"mensaje": f"Limpieza completada. Se eliminaron {num_borrados} recursos."}
+        return {
+            "mensaje": f"Limpieza completada. Se eliminaron {num_borrados} recs."
+        }
     except Exception as e:
         db.rollback()
         return {"error": f"No se pudo limpiar: {str(e)}"}

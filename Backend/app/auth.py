@@ -11,13 +11,8 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "esta_es_una_clave_super_secreta_cambiala")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080))
-
-# --- !!! ESTA ES LA LÍNEA QUE FALTABA !!! ---
-# Configuramos el contexto de encriptación (usando argon2 o bcrypt)
 pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
-
-# --- FUNCIONES ---
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """

@@ -1,7 +1,3 @@
-# Version: 3.0
-# Archivo: Analisis_IA/parser.py
-# Descripción: Módulo para analizar archivos de chat exportados de WhatsApp.
-
 import re
 from typing import List, Dict
 

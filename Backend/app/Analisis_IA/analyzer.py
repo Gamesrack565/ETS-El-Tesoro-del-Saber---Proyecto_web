@@ -1,7 +1,3 @@
-# Version: 3.0
-# Archivo: Analisis_IA/analyzer.py
-# Descripción: Módulo para analizar reseñas de profesores usando Google Gemini.
-
 import json
 import os
 import re

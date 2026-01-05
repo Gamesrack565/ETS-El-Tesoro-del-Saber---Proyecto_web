@@ -10,7 +10,6 @@ from app.Estadistica import esquemas
 from app.Porta_Estudio.modelos import Resource
 from app.Reviews.modelos import Resena
 from app.Usuarios.modelos import User
-from app.Reviews.modelos import Resena
 
 router = APIRouter()
 
@@ -59,7 +58,8 @@ def mejores_profesores(limit: int = 5, db: Session = Depends(get_db)):
     # 5. Ordena descendente por el promedio calculado.
     # 1. Tu consulta original para obtener el Top
     resultados = db.query(
-        Profesor.id,  # <--- Agregamos el ID para poder buscar sus reseñas luego
+        # Agregamos el ID para poder buscar sus reseñas luego
+        Profesor.id,
         Profesor.nombre,
         func.avg(Resena.calificacion).label("promedio"),
         func.count(Resena.id).label("total")
@@ -77,7 +77,7 @@ def mejores_profesores(limit: int = 5, db: Session = Depends(get_db)):
         # Buscamos la reseña más reciente de este profesor específico
         ultima_resena = db.query(Resena).filter(
             Resena.profesor_id == r.id,
-            Resena.comentario != None, # Que tenga texto
+            Resena.comentario.is_not(None),  # Que tenga texto
             Resena.comentario != ""
         ).order_by(desc(Resena.id)).first()
 
@@ -92,7 +92,7 @@ def mejores_profesores(limit: int = 5, db: Session = Depends(get_db)):
             "nombre": r.nombre,
             "valor": round(r.promedio, 1),
             "total_resenas": r.total,
-            "ultimo_comentario": comentario_texto # <--- Campo Nuevo
+            "ultimo_comentario": comentario_texto  # <--- Campo Nuevo
         })
 
     return lista_final

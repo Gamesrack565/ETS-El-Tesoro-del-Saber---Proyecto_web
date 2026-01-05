@@ -129,9 +129,11 @@ async def request_password_reset(
             "message": "Si el correo existe, recibirás instrucciones pronto."
         }
 
-    reset_token = auth.create_access_token(data={"sub": user.email, "type": "reset"})
+    reset_token = auth.create_access_token(
+        data={"sub": user.email, "type": "reset"}
+    )
 
-    base_url = os.getenv("FRONTEND_URL", "http://localhost:5173") 
+    base_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
     link = f"{base_url}/reset-password?token={reset_token}"
 
     # Construcción meticulosa del HTML para respetar PEP 8 y tu contenido
