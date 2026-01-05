@@ -112,19 +112,19 @@ def actividad_reciente(db: Session = Depends(get_db)):
     Returns:
         List[ActividadReciente]: Lista de las ultimas 5 reseñas.
     """
-    # Ordenamos por ID descendente para obtener los ultimos insertados
+    # Obtenemos las últimas 5 reseñas con el objeto completo
     resenas = db.query(Resena).order_by(desc(Resena.id)).limit(5).all()
 
     return [
         {
+            "id": r.id,
             "profesor": r.profesor.nombre if r.profesor else "Desconocido",
             "materia": r.materia.nombre if r.materia else "General",
             "calificacion": r.calificacion,
-            # Truncamos el comentario para vista previa
-            "comentario_corto": (
-                (r.comentario[:40] + "...")
-                if r.comentario else "Sin comentario"
-            )
+            "dificultad": r.dificultad,
+            "total_votos_utiles": r.total_votos_utiles,
+            "comentario": r.comentario,
+            "created_at": r.created_at
         }
         for r in resenas
     ]
