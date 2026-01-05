@@ -1,0 +1,13 @@
+Hola persona, que lo más seguro sea el profesor 
+Para poder hacer uso del analisis de mensajes con IA
+Inicia sesión con esta cuenta admin:
+Correo: angelhac17@gmail.com
+Contraseña: 123456789
+
+Y sube el archivo subeme.txt
+Es una archivo mediano, por lo que el analisis puede tardar un poco
+En caso de tener un error por la magnitud del archivo
+
+Puede subir el arhivo this2.txt
+Es un archivo más pequeño y funcional al 100%
+Este archivo sera más rapido de analisar 
